@@ -65,10 +65,10 @@ class Ant(Unit):
         while ((cur_x, cur_y) != (x, y)):
             if cur_x != x and random() <= 0.5:
                 cur_x += step_x
-                path.append((cur_x, cur_y))
+                path.append({'q': cur_x, 'r': cur_y})
             elif cur_y != y:
                 cur_y += step_y
-                path.append((cur_x, cur_y))
+                path.append({'q': cur_x, 'r': cur_y})
 
         # # Добавить уменьшение self.op если Тип гекса - грязь
         # if map.get((cur_x, cur_y)) and map[(cur_x, cur_y)].type == HexType.swamp:

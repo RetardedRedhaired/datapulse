@@ -21,8 +21,9 @@ def main():
     except Exception as error:
         print(f'\nОШИБКА: {error}\n')
     else:
-        print(response.json())
-        return response.json()
+        data = response.json()
+        print(data)
+        return data
 
 
 if __name__ == '__main__':
