@@ -4,6 +4,7 @@ import requests
 import time
 from dotenv import load_dotenv
 
+from register import register
 from load_content import load_data
 from utils import get_moves
 
@@ -51,6 +52,7 @@ def main():
 
 if __name__ == '__main__':
     while True:
-        main()
-        time.sleep(1)
+        if register() < 0:
+            main()
+            time.sleep(1)
 

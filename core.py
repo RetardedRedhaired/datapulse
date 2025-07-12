@@ -63,24 +63,29 @@ class Ant(Unit):
             dest_hex = Position(self.q + randint(-100, 100),
                                 self.r + randint(-100, 100))
 
-        # Боец атакует врага, остальные берут еду и возврвращаются
-        if (self.q, self.r) == map['spot']:
-            return dest_hex
+        # Боец атакует врага, остальные берут еду и возвращаются
         if self.food['amount'] > 0:
             return map['spot']
-        if enemies and self.type == 1:  # боец
-            return Position(enemies[0].q, enemies[0].r)
+        # if enemies and self.type == 1:  # боец
+        #     return Position(enemies[0].q, enemies[0].r)
+        if (self.q, self.r) == map['spot']:
+            return dest_hex
         if food:
             return Position(food[0].q, food[0].r)
         return dest_hex
 
-    def get_path(self, x, y):
+    def get_path(self, x, y, map):
         """Возвращает список координат, описывающих путь до точки (x, y)."""
         path = list()
         cur_x, cur_y = self.q, self.r
         step_x, step_y = get_step(cur_x, x), get_step(cur_y, y)
 
         while ((cur_x, cur_y) != (x, y)):
+
+            if (map.get((cur_x+step_x, cur_y)) and map[(cur_x+step_x, cur_y)].type == 4
+                    and map.get((cur_x, cur_y+step_y)) and map[(cur_x, cur_y+step_y)].type == 4):
+                break
+
             if cur_x != x and random() <= 0.5:
                 cur_x += step_x
                 path.append({'q': cur_x, 'r': cur_y})

@@ -8,7 +8,7 @@ def get_moves(ants: list, map: dict, food: list, enemies: list) -> list:
         cur_ant = dict()
         cur_ant['ant'] = ant.id
         pos = ant.get_useful_hex(map, food, enemies)
-        cur_ant['path'] = ant.get_path(pos.q, pos.r)
+        cur_ant['path'] = ant.get_path(pos.q, pos.r, map)
         moves.append(cur_ant)
     return moves
 

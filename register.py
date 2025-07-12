@@ -14,7 +14,7 @@ session = requests.Session()
 session.headers.update(headers)
 
 
-def main():
+def register():
     try:
         response = session.post(url=URL_REGISTER)
     except Exception as error:
@@ -22,8 +22,8 @@ def main():
     else:
         data = response.json()
         print(data)
-        return data
+        return data.get('lobbyEndsIn', 0)
 
 
 if __name__ == '__main__':
-    main()
+    register()
