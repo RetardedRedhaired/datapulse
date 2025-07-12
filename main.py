@@ -1,6 +1,7 @@
 import os
 import json
 import requests
+import time
 from dotenv import load_dotenv
 
 from load_content import load_data
@@ -42,11 +43,14 @@ def post_moves(moves):
 def main():
     data = get_arena_data()
     ants, enemies, food, home, map = load_data(data)
-    moves = get_moves(ants, map)
+    moves = get_moves(ants, map, food, enemies)
     post_moves(moves)
 
     print(json.dumps(data, indent=2))
 
 
 if __name__ == '__main__':
-    main()
+    while True:
+        main()
+        time.sleep(1)
+

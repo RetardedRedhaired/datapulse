@@ -11,6 +11,11 @@ class Position:
     def __init__(self, q=None, r=None):
         self.q, self.r = q, r
 
+    def __eq__(self, other):
+        if isinstance(other, tuple):
+            return other == self.q, self.r
+        return NotImplemented
+
 
 class Hex(Position):
     """Класс базовой ячейки карты."""
@@ -48,14 +53,28 @@ class Ant(Unit):
         super().__init__(**kwargs)
         self.op = (5, 4, 7)[self.type]
 
-    def get_useful_hex(self, map: dict = {}):
+    def get_useful_hex(self, map: dict = {}, food: list = [], enemies: list = []):
         """Возвращает координаты ближайшей полезной точки."""
-        # пока возвращает рандомные координаты
-        if self.food:
-            return map['spot']
-        return self.q + randint(-10, 10), self.r + randint(-10, 10)
+        dest_hex = Position(self.q + randint(-100, 100),
+                            self.r + randint(-100, 100))
 
-    def get_path(self, x, y, map: dict = {}):
+        # 4 - кислота
+        while map.get((dest_hex.q, dest_hex.r)) and map[(dest_hex.q, dest_hex.r)].type == 4:
+            dest_hex = Position(self.q + randint(-100, 100),
+                                self.r + randint(-100, 100))
+
+        # Боец атакует врага, остальные берут еду и возврвращаются
+        if (self.q, self.r) == map['spot']:
+            return dest_hex
+        if self.food['amount'] > 0:
+            return map['spot']
+        if enemies and self.type == 1:  # боец
+            return Position(enemies[0].q, enemies[0].r)
+        if food:
+            return Position(food[0].q, food[0].r)
+        return dest_hex
+
+    def get_path(self, x, y):
         """Возвращает список координат, описывающих путь до точки (x, y)."""
         path = list()
         cur_x, cur_y = self.q, self.r
@@ -68,9 +87,5 @@ class Ant(Unit):
             elif cur_y != y:
                 cur_y += step_y
                 path.append({'q': cur_x, 'r': cur_y})
-
-        # # Добавить уменьшение self.op если Тип гекса - грязь
-        # if map.get((cur_x, cur_y)) and map[(cur_x, cur_y)].type == HexType.swamp:
-        #     self.op -= 1
 
         return path[:self.op]
