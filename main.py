@@ -31,7 +31,7 @@ def get_arena_data():
 def post_moves(moves):
     data = {'moves': moves}
     try:
-        response = session.post(url=URL_MOVE, data=data)
+        response = session.post(url=URL_MOVE, data=json.dumps(data))
     except Exception as error:
         print(f'\nОШИБКА: {error}\n')
     else:

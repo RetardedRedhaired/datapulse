@@ -7,7 +7,7 @@ def get_moves(ants: list, map: dict) -> list:
     for ant in ants:
         cur_ant = dict()
         cur_ant['ant'] = ant.id
-        x, y = ant.get_useful_hex(map)
-        cur_ant['path'] = ant.get_path(x, y, map)
+        pos = ant.get_useful_hex(map)
+        cur_ant['path'] = ant.get_path(pos.q, pos.r, map)
         moves.append(cur_ant)
     return moves
