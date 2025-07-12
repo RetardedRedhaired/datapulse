@@ -1,0 +1,704 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DatsPulse - Визуализация игрового поля</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+            min-height: 100vh;
+            color: white;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+            background: rgba(0, 0, 0, 0.3);
+            padding: 20px;
+            border-radius: 15px;
+            backdrop-filter: blur(10px);
+        }
+
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+        }
+
+        .controls {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+
+        .control-group {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 5px;
+        }
+
+        input, button, select {
+            padding: 12px 20px;
+            border: none;
+            border-radius: 8px;
+            font-size: 14px;
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+            backdrop-filter: blur(5px);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+        }
+
+        input::placeholder {
+            color: rgba(255, 255, 255, 0.7);
+        }
+
+        button {
+            background: linear-gradient(45deg, #ff6b6b, #ee5a52);
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-weight: bold;
+        }
+
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(255, 107, 107, 0.4);
+        }
+
+        button:disabled {
+            background: rgba(128, 128, 128, 0.3);
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+
+        .status {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .status-item {
+            background: rgba(0, 0, 0, 0.3);
+            padding: 15px;
+            border-radius: 10px;
+            text-align: center;
+            backdrop-filter: blur(5px);
+        }
+
+        .status-item h3 {
+            margin-bottom: 10px;
+            color: #ffd700;
+        }
+
+        .game-area {
+            display: grid;
+            grid-template-columns: 1fr 300px;
+            gap: 20px;
+            height: 600px;
+        }
+
+        .map-container {
+            background: rgba(0, 0, 0, 0.2);
+            border-radius: 15px;
+            padding: 20px;
+            position: relative;
+            overflow: hidden;
+            backdrop-filter: blur(10px);
+        }
+
+        .map-canvas {
+            width: 100%;
+            height: 100%;
+            border-radius: 10px;
+            background: #1a1a2e;
+        }
+
+        .info-panel {
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 15px;
+            padding: 20px;
+            overflow-y: auto;
+            backdrop-filter: blur(10px);
+        }
+
+        .info-section {
+            margin-bottom: 20px;
+        }
+
+        .info-section h3 {
+            color: #ffd700;
+            margin-bottom: 10px;
+            border-bottom: 2px solid #ffd700;
+            padding-bottom: 5px;
+        }
+
+        .ant-list, .enemy-list, .food-list {
+            max-height: 150px;
+            overflow-y: auto;
+        }
+
+        .ant-item, .enemy-item, .food-item {
+            background: rgba(255, 255, 255, 0.1);
+            margin: 5px 0;
+            padding: 8px;
+            border-radius: 5px;
+            font-size: 12px;
+        }
+
+        .ant-scout { border-left: 4px solid #00ff00; }
+        .ant-soldier { border-left: 4px solid #ff0000; }
+        .ant-worker { border-left: 4px solid #ffff00; }
+
+        .legend {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+            gap: 10px;
+            margin-top: 20px;
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 12px;
+        }
+
+        .legend-color {
+            width: 20px;
+            height: 20px;
+            border-radius: 3px;
+        }
+
+        .error-message {
+            background: rgba(255, 0, 0, 0.2);
+            color: #ff6b6b;
+            padding: 10px;
+            border-radius: 8px;
+            margin: 10px 0;
+            border: 1px solid #ff6b6b;
+        }
+
+        .success-message {
+            background: rgba(0, 255, 0, 0.2);
+            color: #4caf50;
+            padding: 10px;
+            border-radius: 8px;
+            margin: 10px 0;
+            border: 1px solid #4caf50;
+        }
+
+        @media (max-width: 768px) {
+            .game-area {
+                grid-template-columns: 1fr;
+                height: auto;
+            }
+
+            .map-container {
+                height: 400px;
+            }
+
+            .controls {
+                flex-direction: column;
+                align-items: center;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🐜 DatsPulse Visualizer</h1>
+            <p>Визуализация игрового поля колонии муравьев</p>
+        </div>
+
+        <div class="controls">
+            <div class="control-group">
+                <label>API Token:</label>
+                <input type="password" id="apiToken" placeholder="Введите ваш API токен">
+            </div>
+            <div class="control-group">
+                <label>Сервер:</label>
+                <select id="serverSelect">
+                    <option value="test">Тестовый сервер</option>
+                    <option value="prod">Боевой сервер</option>
+                </select>
+            </div>
+            <div class="control-group">
+                <label>Действия:</label>
+                <button id="fetchData">Получить данные</button>
+                <button id="autoUpdate">Авто-обновление</button>
+            </div>
+        </div>
+
+        <div class="status">
+            <div class="status-item">
+                <h3>Счет</h3>
+                <div id="score">0</div>
+            </div>
+            <div class="status-item">
+                <h3>Ход</h3>
+                <div id="turnNo">0</div>
+            </div>
+            <div class="status-item">
+                <h3>До следующего хода</h3>
+                <div id="nextTurnIn">0.0 сек</div>
+            </div>
+            <div class="status-item">
+                <h3>Муравьи</h3>
+                <div id="antsCount">0</div>
+            </div>
+            <div class="status-item">
+                <h3>Враги</h3>
+                <div id="enemiesCount">0</div>
+            </div>
+            <div class="status-item">
+                <h3>Ресурсы</h3>
+                <div id="foodCount">0</div>
+            </div>
+        </div>
+
+        <div class="game-area">
+            <div class="map-container">
+                <canvas id="mapCanvas" class="map-canvas"></canvas>
+            </div>
+            <div class="info-panel">
+                <div class="info-section">
+                    <h3>Мои муравьи</h3>
+                    <div id="antsList" class="ant-list"></div>
+                </div>
+                <div class="info-section">
+                    <h3>Враги</h3>
+                    <div id="enemiesList" class="enemy-list"></div>
+                </div>
+                <div class="info-section">
+                    <h3>Ресурсы</h3>
+                    <div id="foodList" class="food-list"></div>
+                </div>
+            </div>
+        </div>
+
+        <div class="legend">
+            <div class="legend-item">
+                <div class="legend-color" style="background: #000000;"></div>
+                <span>Муравейник</span>
+            </div>
+            <div class="legend-item">
+                <div class="legend-color" style="background: #228B22;"></div>
+                <span>Пустой гекс</span>
+            </div>
+            <div class="legend-item">
+                <div class="legend-color" style="background: #8B4513;"></div>
+                <span>Грязь</span>
+            </div>
+            <div class="legend-item">
+                <div class="legend-color" style="background: #00FF00;"></div>
+                <span>Кислота</span>
+            </div>
+            <div class="legend-item">
+                <div class="legend-color" style="background: #696969;"></div>
+                <span>Камни</span>
+            </div>
+            <div class="legend-item">
+                <div class="legend-color" style="background: #00FF00;"></div>
+                <span>Разведчик</span>
+            </div>
+            <div class="legend-item">
+                <div class="legend-color" style="background: #FF0000;"></div>
+                <span>Боец</span>
+            </div>
+            <div class="legend-item">
+                <div class="legend-color" style="background: #FFFF00;"></div>
+                <span>Рабочий</span>
+            </div>
+            <div class="legend-item">
+                <div class="legend-color" style="background: #FF69B4;"></div>
+                <span>Яблоко</span>
+            </div>
+            <div class="legend-item">
+                <div class="legend-color" style="background: #DEB887;"></div>
+                <span>Хлеб</span>
+            </div>
+            <div class="legend-item">
+                <div class="legend-color" style="background: #FFD700;"></div>
+                <span>Нектар</span>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        class DatsPulseVisualizer {
+            constructor() {
+                this.canvas = document.getElementById('mapCanvas');
+                this.ctx = this.canvas.getContext('2d');
+                this.gameData = null;
+                this.autoUpdateInterval = null;
+                this.hexSize = 20;
+                this.offsetX = 0;
+                this.offsetY = 0;
+                this.scale = 1;
+
+                this.setupCanvas();
+                this.setupEventListeners();
+            }
+
+            setupCanvas() {
+                this.canvas.width = this.canvas.offsetWidth;
+                this.canvas.height = this.canvas.offsetHeight;
+
+                window.addEventListener('resize', () => {
+                    this.canvas.width = this.canvas.offsetWidth;
+                    this.canvas.height = this.canvas.offsetHeight;
+                    this.draw();
+                });
+            }
+
+            setupEventListeners() {
+                document.getElementById('fetchData').addEventListener('click', () => this.fetchGameData());
+                document.getElementById('autoUpdate').addEventListener('click', () => this.toggleAutoUpdate());
+
+                // Навигация по карте
+                this.canvas.addEventListener('wheel', (e) => {
+                    e.preventDefault();
+                    const rect = this.canvas.getBoundingClientRect();
+                    const mouseX = e.clientX - rect.left;
+                    const mouseY = e.clientY - rect.top;
+
+                    const zoomFactor = e.deltaY > 0 ? 0.9 : 1.1;
+                    const newScale = Math.max(0.1, Math.min(5, this.scale * zoomFactor));
+
+                    this.offsetX = mouseX - (mouseX - this.offsetX) * (newScale / this.scale);
+                    this.offsetY = mouseY - (mouseY - this.offsetY) * (newScale / this.scale);
+                    this.scale = newScale;
+
+                    this.draw();
+                });
+
+                let isDragging = false;
+                let lastX, lastY;
+
+                this.canvas.addEventListener('mousedown', (e) => {
+                    isDragging = true;
+                    lastX = e.clientX;
+                    lastY = e.clientY;
+                });
+
+                this.canvas.addEventListener('mousemove', (e) => {
+                    if (isDragging) {
+                        const deltaX = e.clientX - lastX;
+                        const deltaY = e.clientY - lastY;
+                        this.offsetX += deltaX;
+                        this.offsetY += deltaY;
+                        lastX = e.clientX;
+                        lastY = e.clientY;
+                        this.draw();
+                    }
+                });
+
+                this.canvas.addEventListener('mouseup', () => {
+                    isDragging = false;
+                });
+            }
+
+            async fetchGameData() {
+                const token = document.getElementById('apiToken').value;
+                const serverType = document.getElementById('serverSelect').value;
+
+                if (!token) {
+                    this.showError('Пожалуйста, введите API токен');
+                    return;
+                }
+
+                const baseUrl = serverType === 'test' ?
+                    'https://games-test.datsteam.dev' :
+                    'https://games.datsteam.dev';
+
+                try {
+                    const response = await fetch(`${baseUrl}/api/arena`, {
+                        headers: {
+                            'X-Auth-Token': token
+                        }
+                    });
+
+                    if (!response.ok) {
+                        throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                    }
+
+                    this.gameData = await response.json();
+                    this.updateDisplay();
+                    this.draw();
+                    this.showSuccess('Данные успешно получены');
+                } catch (error) {
+                    this.showError(`Ошибка получения данных: ${error.message}`);
+                }
+            }
+
+            toggleAutoUpdate() {
+                const button = document.getElementById('autoUpdate');
+
+                if (this.autoUpdateInterval) {
+                    clearInterval(this.autoUpdateInterval);
+                    this.autoUpdateInterval = null;
+                    button.textContent = 'Авто-обновление';
+                    button.style.background = 'linear-gradient(45deg, #ff6b6b, #ee5a52)';
+                } else {
+                    this.autoUpdateInterval = setInterval(() => {
+                        this.fetchGameData();
+                    }, 2000);
+                    button.textContent = 'Остановить';
+                    button.style.background = 'linear-gradient(45deg, #4caf50, #45a049)';
+                }
+            }
+
+            updateDisplay() {
+                if (!this.gameData) return;
+
+                document.getElementById('score').textContent = this.gameData.score;
+                document.getElementById('turnNo').textContent = this.gameData.turnNo;
+                document.getElementById('nextTurnIn').textContent = `${this.gameData.nextTurnIn.toFixed(1)} сек`;
+                document.getElementById('antsCount').textContent = this.gameData.ants.length;
+                document.getElementById('enemiesCount').textContent = this.gameData.enemies.length;
+                document.getElementById('foodCount').textContent = this.gameData.food.length;
+
+                this.updateAntsList();
+                this.updateEnemiesList();
+                this.updateFoodList();
+            }
+
+            updateAntsList() {
+                const container = document.getElementById('antsList');
+                container.innerHTML = '';
+
+                this.gameData.ants.forEach(ant => {
+                    const div = document.createElement('div');
+                    div.className = `ant-item ant-${this.getAntTypeName(ant.type)}`;
+                    div.innerHTML = `
+                        <strong>${this.getAntTypeName(ant.type)}</strong><br>
+                        Позиция: (${ant.q}, ${ant.r})<br>
+                        Здоровье: ${ant.health}<br>
+                        Ресурс: ${ant.food ? `${this.getFoodTypeName(ant.food.type)} (${ant.food.amount})` : 'Нет'}
+                    `;
+                    container.appendChild(div);
+                });
+            }
+
+            updateEnemiesList() {
+                const container = document.getElementById('enemiesList');
+                container.innerHTML = '';
+
+                this.gameData.enemies.forEach(enemy => {
+                    const div = document.createElement('div');
+                    div.className = 'enemy-item';
+                    div.innerHTML = `
+                        <strong>${this.getAntTypeName(enemy.type)}</strong><br>
+                        Позиция: (${enemy.q}, ${enemy.r})<br>
+                        Здоровье: ${enemy.health}<br>
+                        Атака: ${enemy.attack}
+                    `;
+                    container.appendChild(div);
+                });
+            }
+
+            updateFoodList() {
+                const container = document.getElementById('foodList');
+                container.innerHTML = '';
+
+                this.gameData.food.forEach(food => {
+                    const div = document.createElement('div');
+                    div.className = 'food-item';
+                    div.innerHTML = `
+                        <strong>${this.getFoodTypeName(food.type)}</strong><br>
+                        Позиция: (${food.q}, ${food.r})<br>
+                        Количество: ${food.amount}
+                    `;
+                    container.appendChild(div);
+                });
+            }
+
+            draw() {
+                if (!this.gameData) return;
+
+                this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+
+                // Рисуем карту
+                this.gameData.map.forEach(tile => {
+                    this.drawHex(tile.q, tile.r, this.getTileColor(tile.type));
+                });
+
+                // Рисуем муравейник
+                this.gameData.home.forEach(homeHex => {
+                    this.drawHex(homeHex.q, homeHex.r, '#000000', true);
+                });
+
+                // Рисуем основной гекс муравейника
+                if (this.gameData.spot) {
+                    this.drawHex(this.gameData.spot.q, this.gameData.spot.r, '#000000', true);
+                }
+
+                // Рисуем ресурсы
+                this.gameData.food.forEach(food => {
+                    this.drawHex(food.q, food.r, this.getFoodColor(food.type));
+                    this.drawText(food.q, food.r, food.amount.toString(), 'white');
+                });
+
+                // Рисуем своих муравьев
+                this.gameData.ants.forEach(ant => {
+                    this.drawHex(ant.q, ant.r, this.getAntColor(ant.type));
+                    this.drawText(ant.q, ant.r, ant.health.toString(), 'white');
+                });
+
+                // Рисуем врагов
+                this.gameData.enemies.forEach(enemy => {
+                    this.drawHex(enemy.q, enemy.r, this.getEnemyColor(enemy.type));
+                    this.drawText(enemy.q, enemy.r, enemy.health.toString(), 'white');
+                });
+            }
+
+            drawHex(q, r, color, isHome = false) {
+                const [x, y] = this.hexToPixel(q, r);
+                const size = this.hexSize * this.scale;
+
+                this.ctx.beginPath();
+                for (let i = 0; i < 6; i++) {
+                    const angle = (Math.PI / 3) * i;
+                    const hexX = x + size * Math.cos(angle);
+                    const hexY = y + size * Math.sin(angle);
+
+                    if (i === 0) {
+                        this.ctx.moveTo(hexX, hexY);
+                    } else {
+                        this.ctx.lineTo(hexX, hexY);
+                    }
+                }
+                this.ctx.closePath();
+
+                this.ctx.fillStyle = color;
+                this.ctx.fill();
+
+                this.ctx.strokeStyle = isHome ? '#FFD700' : '#333';
+                this.ctx.lineWidth = isHome ? 3 : 1;
+                this.ctx.stroke();
+            }
+
+            drawText(q, r, text, color) {
+                const [x, y] = this.hexToPixel(q, r);
+                const fontSize = Math.max(8, this.hexSize * this.scale * 0.4);
+
+                this.ctx.fillStyle = color;
+                this.ctx.font = `${fontSize}px Arial`;
+                this.ctx.textAlign = 'center';
+                this.ctx.textBaseline = 'middle';
+                this.ctx.fillText(text, x, y);
+            }
+
+            hexToPixel(q, r) {
+                const size = this.hexSize * this.scale;
+                const x = size * (3/2 * q) + this.offsetX + this.canvas.width / 2;
+                const y = size * (Math.sqrt(3)/2 * q + Math.sqrt(3) * r) + this.offsetY + this.canvas.height / 2;
+                return [x, y];
+            }
+
+            getTileColor(type) {
+                const colors = {
+                    1: '#000000', // муравейник
+                    2: '#228B22', // пустой
+                    3: '#8B4513', // грязь
+                    4: '#00FF00', // кислота
+                    5: '#696969'  // камни
+                };
+                return colors[type] || '#333';
+            }
+
+            getAntColor(type) {
+                const colors = {
+                    0: '#FFFF00', // рабочий
+                    1: '#FF0000', // боец
+                    2: '#00FF00'  // разведчик
+                };
+                return colors[type] || '#FFF';
+            }
+
+            getEnemyColor(type) {
+                const colors = {
+                    0: '#FFCC00', // рабочий
+                    1: '#CC0000', // боец
+                    2: '#00CC00'  // разведчик
+                };
+                return colors[type] || '#CCC';
+            }
+
+            getFoodColor(type) {
+                const colors = {
+                    1: '#FF69B4', // яблоко
+                    2: '#DEB887', // хлеб
+                    3: '#FFD700'  // нектар
+                };
+                return colors[type] || '#FFF';
+            }
+
+            getAntTypeName(type) {
+                const names = {
+                    0: 'Рабочий',
+                    1: 'Боец',
+                    2: 'Разведчик'
+                };
+                return names[type] || 'Неизвестный';
+            }
+
+            getFoodTypeName(type) {
+                const names = {
+                    1: 'Яблоко',
+                    2: 'Хлеб',
+                    3: 'Нектар'
+                };
+                return names[type] || 'Неизвестный';
+            }
+
+            showError(message) {
+                this.showMessage(message, 'error');
+            }
+
+            showSuccess(message) {
+                this.showMessage(message, 'success');
+            }
+
+            showMessage(message, type) {
+                // Удаляем предыдущие сообщения
+                const existingMessages = document.querySelectorAll('.error-message, .success-message');
+                existingMessages.forEach(msg => msg.remove());
+
+                const messageDiv = document.createElement('div');
+                messageDiv.className = type === 'error' ? 'error-message' : 'success-message';
+                messageDiv.textContent = message;
+
+                const container = document.querySelector('.container');
+                container.insertBefore(messageDiv, container.firstChild);
+
+                setTimeout(() => {
+                    messageDiv.remove();
+                }, 5000);
+            }
+        }
+
+        // Инициализация приложения
+        const visualizer = new DatsPulseVisualizer();
+    </script>
+</body>
+</html>

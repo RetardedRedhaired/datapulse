@@ -2,13 +2,13 @@ def get_step(coord_1, coord_2):
     return -1 if coord_2 - coord_1 < 0 else 1
 
 
-def get_moves(ants: list, map: dict, food: list, enemies: list) -> list:
+def get_moves(ants: list, map: dict, food: list, enemies: list, logger, home: list) -> list:
     moves = list()
     for ant in ants:
         cur_ant = dict()
         cur_ant['ant'] = ant.id
-        pos = ant.get_useful_hex(map, food, enemies)
-        cur_ant['path'] = ant.get_path(pos.q, pos.r, map)
+        pos = ant.get_useful_hex(map, food, enemies, home)
+        cur_ant['path'] = ant.get_path(pos.q, pos.r, map, logger)
         moves.append(cur_ant)
     return moves
 

@@ -43,4 +43,6 @@ def load_data(data: dict) -> tuple:
     food = load_food(data)
     home = load_home(data)
     map = load_map(data)
-    return ants, enemies, food, home, map
+    turn_no = data.get('turnNo', 0)
+    next_turn_in = data.get('nextTurnIn', 0.1)
+    return ants, enemies, food, home, map, turn_no, next_turn_in
