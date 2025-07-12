@@ -1,5 +1,8 @@
 from random import random, randint, choice
+
 from pathfind import PathFinder
+from utils import get_step
+
 
 class Position:
     """Позиция игрового объекта."""
@@ -61,12 +64,12 @@ class Ant(Unit):
             dest_hex = Position(self.q + randint(-10, 10),
                                 self.r + randint(-10, 10))
 
-        if self.type == 2:
-            return dest_hex
+        # if self.type == 2:
+        #     return dest_hex
         # Боец атакует врага, остальные берут еду и возвращаются
-        if self.food['amount'] == 2 and self.type != 0:
+        if self.food['amount'] > 0 and self.type != 0:
             return choice(home)
-        if self.type == 0 and self.food['amount'] >= 6:
+        if self.type == 0 and self.food['amount'] >= 4:
             return choice(home)
 
         if enemies and self.type == 1:  # боец
@@ -77,10 +80,12 @@ class Ant(Unit):
 
         if food:
             if self.food['amount'] != 0:
-                food = list(filter(lambda p: p.type == self.food['type'], food))
+                food = list(filter(lambda p: p.type ==
+                            self.food['type'], food))
 
                 try:
-                    nearest_food = min(food, key=lambda p: self.path_finder.heuristic(self.q, self.r, p.q, p.r))
+                    nearest_food = min(food, key=lambda p: self.path_finder.heuristic(
+                        self.q, self.r, p.q, p.r))
                 except ValueError:
                     return choice(home)
 
@@ -97,16 +102,17 @@ class Ant(Unit):
     def get_path(self, x, y, map, logger):
         """Возвращает список координат, описывающих путь до точки (x, y)."""
         return self.path_finder.get_path(x, y, map, use_astar=False, logger=logger)
+
         # path = list()
         # cur_x, cur_y = self.q, self.r
         # step_x, step_y = get_step(cur_x, x), get_step(cur_y, y)
-        #
+
         # while ((cur_x, cur_y) != (x, y)):
-        #
-        #     if (map.get((cur_x+step_x, cur_y)) and map[(cur_x+step_x, cur_y)].type == 4
-        #             and map.get((cur_x, cur_y+step_y)) and map[(cur_x, cur_y+step_y)].type == 4):
-        #         break
-        #
+
+        #     # if (map.get((cur_x+step_x, cur_y)) and map[(cur_x+step_x, cur_y)].type == 4
+        #     #         and map.get((cur_x, cur_y+step_y)) and map[(cur_x, cur_y+step_y)].type == 4):
+        #     #     break
+
         #     if cur_x != x and random() <= 0.5:
         #         cur_x += step_x
         #         path.append({'q': cur_x, 'r': cur_y})
