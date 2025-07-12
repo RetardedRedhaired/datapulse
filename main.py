@@ -10,6 +10,7 @@ from utils import get_moves
 load_dotenv()
 TOKEN = os.getenv('TOKEN')
 URL_ARENA = os.getenv('URL_ARENA')
+URL_MOVE = os.getenv('URL_MOVE')
 
 headers = {
     'X-API-Key': TOKEN
@@ -27,10 +28,21 @@ def get_arena_data():
         return response.json()
 
 
+def post_moves(moves):
+    data = {'moves': moves}
+    try:
+        response = session.post(url=URL_MOVE, data=data)
+    except Exception as error:
+        print(f'\nОШИБКА: {error}\n')
+    else:
+        return response.json()
+
+
 def main():
     data = get_arena_data()
     ants, enemies, food, home, map = load_data(data)
     moves = get_moves(ants, map)
+    post_moves(moves)
 
     # print(json.dumps(data, indent=4))
 
