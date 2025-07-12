@@ -13,7 +13,7 @@ URL_ARENA = os.getenv('URL_ARENA')
 URL_MOVE = os.getenv('URL_MOVE')
 
 headers = {
-    'X-API-Key': TOKEN
+    'X-Auth-Token': TOKEN
 }
 session = requests.Session()
 session.headers.update(headers)
@@ -35,7 +35,9 @@ def post_moves(moves):
     except Exception as error:
         print(f'\nОШИБКА: {error}\n')
     else:
-        return response.json()
+        data = response.json()
+        print(data)
+        return data
 
 
 def main():

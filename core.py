@@ -1,7 +1,6 @@
 import json
 from random import random, randint
 
-
 from enums import HexType, ResourcesType, UnitType
 from utils import get_step
 

@@ -1,5 +1,4 @@
 import os
-import json
 import requests
 from dotenv import load_dotenv
 
@@ -9,7 +8,7 @@ TOKEN = os.getenv('TOKEN')
 URL_REGISTER = os.getenv('URL_REGISTER')
 
 headers = {
-    'X-API-Key': TOKEN
+    'X-Auth-Token': TOKEN
 }
 session = requests.Session()
 session.headers.update(headers)
