@@ -36,7 +36,6 @@ def post_moves(moves):
         print(f'\nОШИБКА: {error}\n')
     else:
         data = response.json()
-        print(data)
         return data
 
 
@@ -46,7 +45,7 @@ def main():
     moves = get_moves(ants, map)
     post_moves(moves)
 
-    # print(json.dumps(data, indent=4))
+    print(json.dumps(data, indent=2))
 
 
 if __name__ == '__main__':
